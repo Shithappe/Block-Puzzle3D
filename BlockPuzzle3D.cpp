@@ -3,13 +3,14 @@
 #include <sstream>
 #include<string>
 #include <ctime>
-
+#include <Windows.h>
 using namespace std;
 
 
 const int N = 5, Ny = N + 3;
-bool arena[N][Ny][N];
 bool fugure[N][Ny][N];
+bool cub[N][Ny][N];
+bool cube[N][Ny][N];
 
 
 double rotate_y = 170;
@@ -25,17 +26,90 @@ K = 2 * b;
 
 int countKx = Kx, countKz = Kz;
 
-class Cub
+
+bool down = 0;
+
+
+class Cube
 {
 public:
-    Cub();
-    ~Cub();
+    Cube()
+    {
+        for (int x = 0; x < N; x++)
+            for (int y = 0; y < Ny; y++)
+                for (int z = 0; z < N; z++)
+                    cube[x][y][z] = 0;
+    }
+    Cube(int x, int y, int z)
+    {
+        this->x = x;
+        this->y = y;
+        this->z = z;
+        cube[x][y][z] = 1;
+    }
+    Cube(Cube& a)
+    {
+        x = a.x;
+        y = a.y;
+        z = a.z;
+    }
+    void Set(int x, int y, int z)
+    {
+        this->x = x;
+        this->y = y;
+        this->z = z;
+        cube[x][y][z] = 1;
+    }
+    void draw(double x, double y, double z, double kx, double ky, double kz)
+    {
+        glLoadIdentity();
+        // Rotate when user changes rotate_x and rotate_y
+        glRotatef(rotate_x, 1.0, 0.0, 0.0);
+        glRotatef(rotate_y, 0.0, 1.0, 0.0);
 
+        // Purple side - RIGHT
+        glBegin(GL_LINE_STRIP);//(GL_POLYGON);
+        // glColor3f(1.0, 0.0, 1.0);
+        glVertex3f(x + kx, -y + ky, -z + kz);
+        glVertex3f(x + kx, y + ky, -z + kz);
+        glVertex3f(x + kx, y + ky, z + kz);
+        glVertex3f(x + kx, -y + ky, z + kz);
+        glEnd();
+
+        // Green side - LEFT
+        glBegin(GL_LINE_STRIP);
+        //glColor3f(0.0, 1.0, 0.0);
+        glVertex3f(-x + kx, -y + ky, z + kz);
+        glVertex3f(-x + kx, y + ky, z + kz);
+        glVertex3f(-x + kx, y + ky, -z + kz);
+        glVertex3f(-x + kx, -y + ky, -z + kz);
+        glVertex3f(-x + kx, -y + ky, z + kz);
+        glEnd();
+
+        // Blue side - TOP
+        glBegin(GL_LINE_STRIP);
+        // glColor3f(0.0, 0.0, 1.0);
+        glVertex3f(x + kx, y + ky, z + kz);
+        glVertex3f(x + kx, y + ky, -z + kz);
+        glVertex3f(-x + kx, y + ky, -z + kz);
+        glVertex3f(-x + kx, y + ky, z + kz);
+        glVertex3f(x + kx, y + ky, z + kz);
+        glEnd();
+
+        // Red side - BOTTOM
+        glBegin(GL_LINE_STRIP);
+        // glColor3f(1.0, 0.0, 0.0);
+        glVertex3f(x + kx, -y + ky, -z + kz);
+        glVertex3f(x + kx, -y + ky, z + kz);
+        glVertex3f(-x + kx, -y + ky, z + kz);
+        glVertex3f(-x + kx, -y + ky, -z + kz);
+        glVertex3f(x + kx, -y + ky, -z + kz);
+        glEnd();
+    }
 private:
-
+    int x, y, z;
 };
-
-
+Cube arena[N][Ny][N];
 void drawString(void* font, const char* text, float x, float y)
 {
     if (!text) // нульовий указівник
@@ -66,14 +140,14 @@ void setup() {
     for (int x = 0; x < N; x++) {
         for (int y = 0; y < N; y++) {
             for (int z = 0; z < N; z++) {
-                arena[x][y][z] = 0;
+                cube[x][y][z] = 0;
             }
         }
     }
 
 }
 
-void cub(double x, double y, double z, double kx, double ky, double kz) {
+void cub1(double x, double y, double z, double kx, double ky, double kz) {
 
     // Reset transformations
     glLoadIdentity();
@@ -245,45 +319,7 @@ void BigCub() {
 
 }
 
-void Bottom() {
-    float i = 0;
-    glColor3f(1, 1, 2);
-    for (i = -N / 2; i <= N / 2; i++)
-    {
-        glBegin(GL_LINES);
-        glVertex3f(i, -N / 2, -N / 2);
-        glVertex3f(i, -N / 2, N / 2);
-        glEnd();
-    }
-
-    for (i = -N / 2; i <= N / 2; i++)
-    {
-        glBegin(GL_LINES);
-        glVertex3f(N / 2, -N / 2, i);
-        glVertex3f(-N / 2, -N / 2, i);
-        glEnd();
-    }
-
-}
-
-void drawArr() {
-    for (int j = 0; j < 3; j++)
-    {
-        for (int k = 0; k < 3; k++)
-        {
-            for (int l = 0; l < 3; l++)
-            {
-                if (arena[j][k][l] == 1)
-                {
-                    cub(b, b, b, j, k, l);
-                }
-            }
-        }
-    }
-
-}
-
-void figure(int kx, int kz) {
+void figure(int kx, int ky, int kz) {
     srand(time(0));
 
     int f = rand() % 7;
@@ -302,28 +338,46 @@ void figure(int kx, int kz) {
     //case 6: {
 
 
-
-    fugure[2 + kx][5][2 + kz] = 1;
-    fugure[3 + kx][5][2 + kz] = 1;
-    fugure[2 + kx][5][3 + kz] = 1;
-
+    fugure[2][5][2] = 1;
+    fugure[3][5][2] = 1;
+    fugure[2][5][3] = 1;
 
 
 
-    for (int x = 0; x < N; x++)
-        for (int y = 0; y < Ny; y++)
-            for (int z = 0; z < N; z++)
-                if (fugure[x][y][z] == 1)
-                    arena[x][y][z] = 1;
+    for (int x = N; x > 0; x--)
+        for (int y = Ny; y > 0; y--)
+            for (int z = N; z > 0; z++)
+                if (fugure[x][y][z] == 1) {
+                    if (down) {
+                        if (cube[x][y - 1][z] == 0 || y > 0) {
+                            fugure[x][y][z] = 0;
+                            fugure[x][y - 1][z] = 1;
+                        }
+                        else {
+                            cube[x][y][z] = 1;
+                            down != down;
+                        }
+                    }
+
+
+                    arena[x][y][z].draw(b, b, b, (-x + N / 2) * K, (y * K) - N / 2 * K, (-z + N / 2) * K);
+                    //cub1(b, b, b, (-x + N / 2 +kx) * K, (y + Ny / 2) * K, (-z + N / 2 + kz) * K);
 
 
 
-    // arena[0][0][0] = 1;
- //}
- //default:
- //    break;
- //}
+                }
+
+
+
+    //}
+    //default:
+    //    break;
+    //}
 }
+
+
+
+
 
 void display() {
     cout << Kx << " " << Ky << ' ' << Kz;
@@ -331,14 +385,14 @@ void display() {
 
     // text(0.75, 0, "ad");
 
-    figure(Kx, Kz);
+    figure(Kx, Ky, Kz);
 
 
     for (int x = 0; x < N; x++)
         for (int y = 0; y < Ny; y++)
             for (int z = 0; z < N; z++)
-                if (arena[x][y][z] == 1)
-                    cub(b, b, b, /*x * K*/(-x + N / 2) * K, (y * K) - 2 * K, (-z + N / 2) * K);
+                if (cube[x][y][z] == 1)
+                    arena[x][y][z].draw(b, b, b, (-x + N / 2) * K, (y * K) - N / 2 * K, (-z + N / 2) * K);//cub1(b, b, b, (-x + N / 2)*K, (y * K)-2*K, (-z + N / 2) * K);
 
 
     glFlush();
@@ -399,6 +453,9 @@ void NormalKeyHandler(unsigned char key, int x, int y)
         Kz += 1;
     else if (key == 'w' && Kz > -2)
         Kz -= 1;
+    else if (key == 32) {
+        down != down;
+    }
 
     else if (key == 27)
         exit(0);
@@ -411,7 +468,7 @@ void NormalKeyHandler(unsigned char key, int x, int y)
 int main(int argc, char* argv[]) {
 
     setup();
-    //arena[0][0][0] = 1;
+    //cube[0][0][0] = 1;
     //arena[0][1][0] = 1;
     //arena[0][2][0] = 1;
     //arena[0][3][0] = 1;

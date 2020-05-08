@@ -1,2 +1,4 @@
 ﻿  BlockPuzzle3D.cpp
+C:\Users\515\Desktop\BlockPuzzle3D\cpp-openGL\BlockPuzzle3D.cpp(358,34): warning C4552: "!=": результат выражения не используется
+C:\Users\515\Desktop\BlockPuzzle3D\cpp-openGL\BlockPuzzle3D.cpp(457,14): warning C4552: "!=": результат выражения не используется
   BlockPuzzle3D.vcxproj -> C:\Users\515\Desktop\BlockPuzzle3D\cpp-openGL\Debug\BlockPuzzle3D.exe
