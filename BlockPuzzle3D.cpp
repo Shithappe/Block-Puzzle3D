@@ -1,28 +1,77 @@
-﻿// Controls:    Left Arrow  - Rotate Left
-//              Right Arrow - Rotate Right
-
-
-#include <iostream>
+﻿#include <iostream>
 #include <glut.h>
-//#include <Windows.h>
-//#include <stdio.h>
-//#include <stdarg.h>
-//#include <math.h>
+#include <sstream>
+#include<string>
+#include <ctime>
 
-const int N = 5;
+using namespace std;
 
-double rotate_y = 15;
+
+const int N = 5, Ny = N + 3;
+bool arena[N][Ny][N];
+bool fugure[N][Ny][N];
+
+
+double rotate_y = 170;
 double rotate_x = 15;
 
-bool arena[N][N][N]; 
 int  speedRotate = 5;
 
 double a = 0.5,
-       b = a/N;
-       
-double Kx = 0, Ky = 0, Kz = 0,
-       K = 2 * b;
+b = a / N;
 
+double Kx = 0, Ky = 0, Kz = 0,
+K = 2 * b;
+
+int countKx = Kx, countKz = Kz;
+
+class Cub
+{
+public:
+    Cub();
+    ~Cub();
+
+private:
+
+};
+
+
+void drawString(void* font, const char* text, float x, float y)
+{
+    if (!text) // нульовий указівник
+    {
+        return;
+    }
+    // Встановлення позиції тексту:
+    glRasterPos2f(x, y);
+    while (*text)
+    {
+        // Рядок виводиться посимвольно:
+        glutBitmapCharacter(font, *text);
+        text++;
+    }
+}
+
+void text(double x, double y, string line, int num = -1) {
+    //line = to_string(line);
+    if (num != -1) {
+        string line1 = to_string(num);
+        line += line1;
+    }
+    char* c = &*line.begin();
+    drawString(GLUT_BITMAP_TIMES_ROMAN_24, c, x, y);
+}
+
+void setup() {
+    for (int x = 0; x < N; x++) {
+        for (int y = 0; y < N; y++) {
+            for (int z = 0; z < N; z++) {
+                arena[x][y][z] = 0;
+            }
+        }
+    }
+
+}
 
 void cub(double x, double y, double z, double kx, double ky, double kz) {
 
@@ -35,42 +84,92 @@ void cub(double x, double y, double z, double kx, double ky, double kz) {
     glRotatef(rotate_y, 0.0, 1.0, 0.0);
 
     // Purple side - RIGHT
-    glBegin(GL_POLYGON);
+    glBegin(GL_LINE_STRIP);//(GL_POLYGON);
     // glColor3f(1.0, 0.0, 1.0);
-    glVertex3f(x+kx, -y+ky, -z+kz);
-    glVertex3f(x+kx, y + ky, -z + kz);
-    glVertex3f(x+kx, y + ky, z + kz);
-    glVertex3f(x+kx, -y + ky, z + kz);
+    glVertex3f(x + kx, -y + ky, -z + kz);
+    glVertex3f(x + kx, y + ky, -z + kz);
+    glVertex3f(x + kx, y + ky, z + kz);
+    glVertex3f(x + kx, -y + ky, z + kz);
     glEnd();
 
     // Green side - LEFT
     glBegin(GL_LINE_STRIP);
     //glColor3f(0.0, 1.0, 0.0);
-    glVertex3f(-x+kx, -y + ky, z + kz);
-    glVertex3f(-x+kx, y + ky, z+kz);
-    glVertex3f(-x+kx, y + ky, -z + kz);
-    glVertex3f(-x+kx, -y + ky, -z + kz);
-    glVertex3f(-x+kx, -y + ky, z + kz);
+    glVertex3f(-x + kx, -y + ky, z + kz);
+    glVertex3f(-x + kx, y + ky, z + kz);
+    glVertex3f(-x + kx, y + ky, -z + kz);
+    glVertex3f(-x + kx, -y + ky, -z + kz);
+    glVertex3f(-x + kx, -y + ky, z + kz);
     glEnd();
 
     // Blue side - TOP
     glBegin(GL_LINE_STRIP);
     // glColor3f(0.0, 0.0, 1.0);
-    glVertex3f(x+kx, y + ky, z + kz);
-    glVertex3f(x+kx, y + ky, -z + kz);
-    glVertex3f(-x+kx, y + ky, -z + kz);
-    glVertex3f(-x+kx, y + ky, z + kz);
-    glVertex3f(x+kx, y + ky, z + kz);
+    glVertex3f(x + kx, y + ky, z + kz);
+    glVertex3f(x + kx, y + ky, -z + kz);
+    glVertex3f(-x + kx, y + ky, -z + kz);
+    glVertex3f(-x + kx, y + ky, z + kz);
+    glVertex3f(x + kx, y + ky, z + kz);
     glEnd();
 
     // Red side - BOTTOM
     glBegin(GL_LINE_STRIP);
     // glColor3f(1.0, 0.0, 0.0);
-    glVertex3f(x+kx, -y + ky, -z + kz);
-    glVertex3f(x+kx, -y + ky, z + kz);
-    glVertex3f(-x+kx, -y + ky, z + kz);
-    glVertex3f(-x+kx, -y + ky, -z + kz);
-    glVertex3f(x+kx, -y + ky, -z + kz);
+    glVertex3f(x + kx, -y + ky, -z + kz);
+    glVertex3f(x + kx, -y + ky, z + kz);
+    glVertex3f(-x + kx, -y + ky, z + kz);
+    glVertex3f(-x + kx, -y + ky, -z + kz);
+    glVertex3f(x + kx, -y + ky, -z + kz);
+    glEnd();
+}
+
+void cub2(double x, double y, double z, double kx, double ky, double kz) {
+
+    // Reset transformations
+    glLoadIdentity();
+
+
+    // Rotate when user changes rotate_x and rotate_y
+    glRotatef(rotate_x, 1.0, 0.0, 0.0);
+    glRotatef(rotate_y, 0.0, 1.0, 0.0);
+
+    // Purple side - RIGHT
+    glBegin(GL_LINE_STRIP);//(GL_POLYGON);
+    // glColor3f(1.0, 0.0, 1.0);
+    glVertex3f(x + kx, -y + ky, -z + kz);
+    glVertex3f(x + kx, y + ky, -z + kz);
+    glVertex3f(x + kx, y + ky, z + kz);
+    glVertex3f(x + kx, -y + ky, z + kz);
+    glEnd();
+
+    // Green side - LEFT
+    glBegin(GL_LINE_STRIP);
+    //glColor3f(0.0, 1.0, 0.0);
+    glVertex3f(-x + kx, -y + ky, z + kz);
+    glVertex3f(-x + kx, y + ky, z + kz);
+    glVertex3f(-x + kx, y + ky, -z + kz);
+    glVertex3f(-x + kx, -y + ky, -z + kz);
+    glVertex3f(-x + kx, -y + ky, z + kz);
+    glEnd();
+
+    // Blue side - TOP
+    glBegin(GL_POLYGON);
+    // glColor3f(0.0, 0.0, 1.0);
+    glVertex3f(x + kx, y + ky, z + kz);
+    glVertex3f(x + kx, y + ky, -z + kz);
+    glVertex3f(-x + kx, y + ky, -z + kz);
+    glVertex3f(-x + kx, y + ky, z + kz);
+    glVertex3f(x + kx, y + ky, z + kz);
+    glEnd();
+
+    // Red side - BOTTOM
+    glBegin(GL_LINE_STRIP);
+    // glColor3f(1.0, 0.0, 0.0);
+    glVertex3f(x + kx, -y + ky, -z + kz);
+    glVertex3f(x + kx, -y + ky, z + kz);
+    glVertex3f(-x + kx, -y + ky, z + kz);
+    glVertex3f(-x + kx, -y + ky, -z + kz);
+    glVertex3f(x + kx, -y + ky, -z + kz);
     glEnd();
 }
 
@@ -146,15 +245,101 @@ void BigCub() {
 
 }
 
+void Bottom() {
+    float i = 0;
+    glColor3f(1, 1, 2);
+    for (i = -N / 2; i <= N / 2; i++)
+    {
+        glBegin(GL_LINES);
+        glVertex3f(i, -N / 2, -N / 2);
+        glVertex3f(i, -N / 2, N / 2);
+        glEnd();
+    }
+
+    for (i = -N / 2; i <= N / 2; i++)
+    {
+        glBegin(GL_LINES);
+        glVertex3f(N / 2, -N / 2, i);
+        glVertex3f(-N / 2, -N / 2, i);
+        glEnd();
+    }
+
+}
+
+void drawArr() {
+    for (int j = 0; j < 3; j++)
+    {
+        for (int k = 0; k < 3; k++)
+        {
+            for (int l = 0; l < 3; l++)
+            {
+                if (arena[j][k][l] == 1)
+                {
+                    cub(b, b, b, j, k, l);
+                }
+            }
+        }
+    }
+
+}
+
+void figure(int kx, int kz) {
+    srand(time(0));
+
+    int f = rand() % 7;
+    f = 6;
+    int maxX = 2, maxZ = 2;
+    int TempX = 2, TempZ = 2;
+
+    //std::cout << f;
+    //switch (f)
+    //{
+    //case 0:
+    //case 1:
+    //case 2:
+    //case 3:
+    //case 4:
+    //case 6: {
+
+
+
+    fugure[2 + kx][5][2 + kz] = 1;
+    fugure[3 + kx][5][2 + kz] = 1;
+    fugure[2 + kx][5][3 + kz] = 1;
+
+
+
+
+    for (int x = 0; x < N; x++)
+        for (int y = 0; y < Ny; y++)
+            for (int z = 0; z < N; z++)
+                if (fugure[x][y][z] == 1)
+                    arena[x][y][z] = 1;
+
+
+
+    // arena[0][0][0] = 1;
+ //}
+ //default:
+ //    break;
+ //}
+}
 
 void display() {
+    cout << Kx << " " << Ky << ' ' << Kz;
     BigCub();
-    cub(b, b ,b, Kx, Ky, Kz);
-    //cub(b, b, b, 0, 0, 0);
 
-    cub(b, b, b, -K, 0, 0);
-    cub(b, b, b, 0, 0, 0);
-    cub(b, b, b, K, 0, 0);
+    // text(0.75, 0, "ad");
+
+    figure(Kx, Kz);
+
+
+    for (int x = 0; x < N; x++)
+        for (int y = 0; y < Ny; y++)
+            for (int z = 0; z < N; z++)
+                if (arena[x][y][z] == 1)
+                    cub(b, b, b, /*x * K*/(-x + N / 2) * K, (y * K) - 2 * K, (-z + N / 2) * K);
+
 
     glFlush();
     glutSwapBuffers();
@@ -166,10 +351,7 @@ void specialKeys(int key, int x, int y) {
         rotate_x += speedRotate;
     }
 
-    //  Left arrow - decrease rotation by 5 degree
 
-
-    //  Right arrow - increase rotation by 5 degree
     if (key == GLUT_KEY_RIGHT) {
         rotate_y += speedRotate;
     }
@@ -197,7 +379,7 @@ void specialKeys(int key, int x, int y) {
         }
     }
 
-    else if (key == GLUT_KEY_F2) 
+    else if (key == GLUT_KEY_F2)
         Ky += K;
     else if (key == GLUT_KEY_F1)
         Ky -= K;
@@ -209,24 +391,75 @@ void specialKeys(int key, int x, int y) {
 
 void NormalKeyHandler(unsigned char key, int x, int y)
 {
-    
-    if (key == 'd')
-        Kx += 2 * b;
-    else if (key == 'a')
-        Kx -= K;
-    else if (key == 's')
-        Kz += K;
-    else if (key == 'w')
-        Kz -= K;
+    if (key == 'd' && Kx < 2)
+        Kx += 1;
+    else if (key == 'a' && Kx > -2)
+        Kx -= 1;
+    else if (key == 's' && Kz < 2)
+        Kz += 1;
+    else if (key == 'w' && Kz > -2)
+        Kz -= 1;
+
     else if (key == 27)
         exit(0);
-        
 
-    std::cout << key << std::endl;
+
+    cout << key << std::endl;
     glutPostRedisplay();
 }
 
 int main(int argc, char* argv[]) {
+
+    setup();
+    //arena[0][0][0] = 1;
+    //arena[0][1][0] = 1;
+    //arena[0][2][0] = 1;
+    //arena[0][3][0] = 1;
+    //arena[0][4][0] = 1;
+    //arena[0][5][0] = 1;
+
+
+     //1  
+    //fugure[0][3][0] = 1;
+
+    //2
+    //fugure[0][3][0] = 1;
+    //fugure[0][4][0] = 1;
+    //fugure[0][3][1] = 1;
+
+    //3
+    //fugure[-1][3][0] = 1;
+    //fugure[0][3][0] = 1;
+    //fugure[1][3][0] = 1;
+
+    //4
+    //fugure[0][3][0] = 1;
+    //fugure[1][3][0] = 1;
+    //fugure[1][4][0] = 1;
+    //fugure[0][4][0] = 1;
+
+    //5
+    //fugure[0][3][0] = 1;
+    //fugure[0][3][1] = 1;
+    //fugure[0][4][1] = 1;
+    //fugure[0][4][0] = 1;
+
+    //fugure[0][3][1] = 1;
+    //fugure[0][3][1] = 1;
+    //fugure[0][4][1] = 1;
+    //fugure[0][4][1] = 1;
+
+    //6
+    //fugure[0][3][0] = 1;
+    //fugure[1][3][0] = 1;
+    //fugure[1][3][1] = 1;
+    //fugure[0][3][1] = 1;
+
+    //7
+    //fugure[0][3][0] = 1;
+    //fugure[1][3][1] = 1;
+    //fugure[0][3][1] = 1;
+
 
     //  Initialize GLUT and process user parameters
     glutInit(&argc, argv);
