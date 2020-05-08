@@ -343,36 +343,40 @@ void figure(int kx, int ky, int kz) {
     fugure[2][5][3] = 1;
 
 
+    if (down) {
+        for (int x = 0; x < N; x++)
+            for (int y = 0; y < Ny; y++)
+                for (int z = 0; z < N; z++)
+                    if (fugure[x][y][z] == 1) {
 
-    for (int x = N; x > 0; x--)
-        for (int y = Ny; y > 0; y--)
-            for (int z = N; z > 0; z++)
-                if (fugure[x][y][z] == 1) {
-                    if (down) {
-                        if (cube[x][y - 1][z] == 0 || y > 0) {
+                        if (cube[x][y - 1][z] == 0 && y > 0) {
+                            cout << endl << x << ' ' << y << ' ' << z << endl;
                             fugure[x][y][z] = 0;
                             fugure[x][y - 1][z] = 1;
                         }
                         else {
                             cube[x][y][z] = 1;
-                            down != down;
                         }
                     }
+        down = 0;
+    }
 
 
+
+
+    for (int x = N; x > 0; x--)
+        for (int y = Ny; y > 0; y--)
+            for (int z = N; z > 0; z--)
+                if (fugure[x][y][z] == 1)
                     arena[x][y][z].draw(b, b, b, (-x + N / 2) * K, (y * K) - N / 2 * K, (-z + N / 2) * K);
-                    //cub1(b, b, b, (-x + N / 2 +kx) * K, (y + Ny / 2) * K, (-z + N / 2 + kz) * K);
+    ////cub1(b, b, b, (-x + N / 2 +kx) * K, (y + Ny / 2) * K, (-z + N / 2 + kz) * K);
+    ////Sleep(300);
 
 
-
-                }
-
-
-
-    //}
-    //default:
-    //    break;
-    //}
+//}
+//default:
+//    break;
+//}
 }
 
 
@@ -454,7 +458,7 @@ void NormalKeyHandler(unsigned char key, int x, int y)
     else if (key == 'w' && Kz > -2)
         Kz -= 1;
     else if (key == 32) {
-        down != down;
+        down = 1;
     }
 
     else if (key == 27)
