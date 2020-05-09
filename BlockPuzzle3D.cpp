@@ -21,8 +21,8 @@ int  speedRotate = 5;
 double a = 0.5,
 b = a / N;
 
-double Kx = 0, Ky = 6, Kz = 0,
-K = 2 * b;
+int Kx = 0, Ky = 0, Kz = 0;
+double K = 2 * b;
 
 int countKx = Kx, countKz = Kz;
 
@@ -320,83 +320,77 @@ void BigCub() {
 
 }
 
-void figure(int kx, int ky, int kz) {
-    srand(time(0));
+int getMaxDepth() {
+    int xIndex = -Kx;
+    int zIndex = -Kz;
+    int yIndex = -6;
 
-    int f = rand() % 7;
-    f = 6;
-    int TempX = 2, TempZ = 2;
-
-    //std::cout << f;
-    //switch (f)
-    //{
-    //case 0:
-    //case 1:
-    //case 2:
-    //case 3:
-    //case 4:
-    //case 6: {
-    //for (int x = 0; x < N; x++)
-    //    for (int y = 0; y < Ny; y++)
-    //        for (int z = 0; z < N; z++)
-    //            fugure[x][y][z] = 1;
-
-    fugure[2][5][2] = 1;
-    //fugure[3][5][2] = 1;
-    //fugure[2][5][3] = 1;
-    int maxX = 2, maxZ = 2;
-    fugure[0][0][0] = 1;
-
-    int tempY;
-    if (down == 1) {
-        for (int x = 0; x < N; x++)
-            for (int y = 0; y < Ny; y++)
-                for (int z = 0; z < N; z++)
-                    if (fugure[x][y][z] == 1 && y > 0) {
-                        tempY = y;
-                        if (cube[x][y - 1][z] == 0) {
-                            fugure[x][y][z] = 0; //стирает предний
-                            fugure[x][y - 1][z] = 1; //рисует на 1 ниже 
-                        }
-
-                    }
-        //  else if (y == 0) cube[x][y][z] = 1;
-        down = 0;
+    for (int i = Ny - 1; i >= 0; i--) {
+        if (cube[xIndex][i + 1][zIndex])
+            yIndex = -i;
     }
 
+    return yIndex;
+}
+
+void figure() {
+    fugure[0][1][0] = 1;
+    fugure[1][1][0] = 1;
+    fugure[2][1][0] = 1;
+    fugure[3][1][0] = 1;
+    fugure[4][1][0] = 1;
+    
+
+    if (Ky == getMaxDepth()) {
+        int xIndex = -Kx;
+        int yIndex = -getMaxDepth();
+        int zIndex = -Kz; // y = -x + N /2 // x = N /2 - y
+        cube[xIndex][yIndex][zIndex] = 1;
+        cube[xIndex+1][yIndex][zIndex] = 1;
+        cube[xIndex + 2][yIndex][zIndex] = 1;
+        cube[xIndex + 3][yIndex][zIndex] = 1;
+        cube[xIndex + 4][yIndex][zIndex] = 1;
+
+        Ky = 0;
+        Kz = 0;
+        Kx = 0;
+    }
 
     for (int x = 0; x < N; x++)
         for (int y = 0; y < Ny; y++)
-            for (int z = 0; z < N; z++)
-                if (fugure[x][y][z] == 1)
-                    arena[x][y][z].draw(b, b, b, (-x + kx + N / 2) * K, (y * K) - N / 2 * K, (-z + kz + N / 2) * K);
-
-
-
-    //}
-    //default:
-    //    break;
-    //}
+            for (int z = 0; z < N; z++) {
+                if (fugure[x][y][z])
+                    arena[x][y][z].draw(b, b, b, (-x + Kx + N / 2) * K, (-y + Ky + Ny / 2) * K, (-z + Kz + N / 2) * K);
+            }
 }
 
 
-
+//void done() {
+//    int count = 0;
+//    for (int x = 0; x < N; x++)
+//        for (int z = 0; z < N; z++)
+//            if (count < N * N) count++;
+//    if (count == N * N)
+//        for (int x = 0; x < N; x++)
+//            for (int z = 0; z < N; z++)
+//                cube[x][-6][z] = 0;
+//
+//}
+//
 
 
 void display() {
     cout << Kx << " " << Ky << ' ' << Kz;
     BigCub();
 
-    // text(0.75, 0, "ad");
-
-    figure(Kx, Ky, Kz);
-
+    figure();
+   // done();
 
     for (int x = 0; x < N; x++)
         for (int y = 0; y < Ny; y++)
             for (int z = 0; z < N; z++)
                 if (cube[x][y][z] == 1)
-                    arena[x][y][z].draw(b, b, b, (-x + N / 2) * K, (y * K) - N / 2 * K, (-z + N / 2) * K);//cub1(b, b, b, (-x + N / 2)*K, (y * K)-2*K, (-z + N / 2) * K);
+                    arena[x][y][z].draw(b, b, b, (-x + N / 2) * K, (-y + Ny / 2) * K, (-z + N / 2) * K);
 
 
     glFlush();
@@ -442,22 +436,20 @@ void specialKeys(int key, int x, int y) {
     else if (key == GLUT_KEY_F1)
         Ky -= K;
 
-
-    //  Request display update
     glutPostRedisplay();
 }
 
 void NormalKeyHandler(unsigned char key, int x, int y)
 {
-    if (key == 'd' && Kx < 2)
+    if (key == 'd' && Kx < 0)
         Kx += 1;
-    else if (key == 'a' && Kx > -2)
+    else if (key == 'a' && Kx > -4)
         Kx -= 1;
-    else if (key == 's' && Kz < 2)
+    else if (key == 's' && Kz < 0)
         Kz += 1;
-    else if (key == 'w' && Kz > -2)
+    else if (key == 'w' && Kz > -4)
         Kz -= 1;
-    else if (key == 32) {
+    else if (key == 32 && Ky >= -6) {
         down = 1;
         Ky--;
     }
@@ -473,78 +465,15 @@ void NormalKeyHandler(unsigned char key, int x, int y)
 int main(int argc, char* argv[]) {
 
     setup();
-    //cube[0][0][0] = 1;
-    //arena[0][1][0] = 1;
-    //arena[0][2][0] = 1;
-    //arena[0][3][0] = 1;
-    //arena[0][4][0] = 1;
-    //arena[0][5][0] = 1;
-
-
-     //1  
-    //fugure[0][3][0] = 1;
-
-    //2
-    //fugure[0][3][0] = 1;
-    //fugure[0][4][0] = 1;
-    //fugure[0][3][1] = 1;
-
-    //3
-    //fugure[-1][3][0] = 1;
-    //fugure[0][3][0] = 1;
-    //fugure[1][3][0] = 1;
-
-    //4
-    //fugure[0][3][0] = 1;
-    //fugure[1][3][0] = 1;
-    //fugure[1][4][0] = 1;
-    //fugure[0][4][0] = 1;
-
-    //5
-    //fugure[0][3][0] = 1;
-    //fugure[0][3][1] = 1;
-    //fugure[0][4][1] = 1;
-    //fugure[0][4][0] = 1;
-
-    //fugure[0][3][1] = 1;
-    //fugure[0][3][1] = 1;
-    //fugure[0][4][1] = 1;
-    //fugure[0][4][1] = 1;
-
-    //6
-    //fugure[0][3][0] = 1;
-    //fugure[1][3][0] = 1;
-    //fugure[1][3][1] = 1;
-    //fugure[0][3][1] = 1;
-
-    //7
-    //fugure[0][3][0] = 1;
-    //fugure[1][3][1] = 1;
-    //fugure[0][3][1] = 1;
-
-
-    //  Initialize GLUT and process user parameters
     glutInit(&argc, argv);
-
-    //  Request double buffered true color window with Z-buffer
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-
-    // Create window
     glutInitWindowPosition(200, 100);
     glutInitWindowSize(500, 500);
     glutCreateWindow("---");
-
-    //  Enable Z-buffer depth test
     glEnable(GL_DEPTH_TEST);
-
-    // Callback functions
     glutSpecialFunc(specialKeys);
     glutKeyboardFunc(NormalKeyHandler);
-
     glutDisplayFunc(display);
-
-
-    //  Pass control to GLUT for events
     glutMainLoop();
 
     return 0;
