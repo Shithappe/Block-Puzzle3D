@@ -9,7 +9,7 @@ using namespace std;
 
 const int N = 5, Ny = N + 3;
 bool fugure[N][Ny][N];
-bool cub[N][Ny][N];
+//bool cub[N][Ny][N];
 bool cube[N][Ny][N];
 
 
@@ -21,13 +21,14 @@ int  speedRotate = 5;
 double a = 0.5,
 b = a / N;
 
-double Kx = 0, Ky = 0, Kz = 0,
+double Kx = 0, Ky = 6, Kz = 0,
 K = 2 * b;
 
 int countKx = Kx, countKz = Kz;
 
 
 bool down = 0;
+int maxX, maxZ;
 
 
 class Cube
@@ -324,7 +325,6 @@ void figure(int kx, int ky, int kz) {
 
     int f = rand() % 7;
     f = 6;
-    int maxX = 2, maxZ = 2;
     int TempX = 2, TempZ = 2;
 
     //std::cout << f;
@@ -336,47 +336,47 @@ void figure(int kx, int ky, int kz) {
     //case 3:
     //case 4:
     //case 6: {
-
+    //for (int x = 0; x < N; x++)
+    //    for (int y = 0; y < Ny; y++)
+    //        for (int z = 0; z < N; z++)
+    //            fugure[x][y][z] = 1;
 
     fugure[2][5][2] = 1;
-    fugure[3][5][2] = 1;
-    fugure[2][5][3] = 1;
+    //fugure[3][5][2] = 1;
+    //fugure[2][5][3] = 1;
+    int maxX = 2, maxZ = 2;
+    fugure[0][0][0] = 1;
 
-
-    if (down) {
+    int tempY;
+    if (down == 1) {
         for (int x = 0; x < N; x++)
             for (int y = 0; y < Ny; y++)
                 for (int z = 0; z < N; z++)
-                    if (fugure[x][y][z] == 1) {
+                    if (fugure[x][y][z] == 1 && y > 0) {
+                        tempY = y;
+                        if (cube[x][y - 1][z] == 0) {
+                            fugure[x][y][z] = 0; //стирает предний
+                            fugure[x][y - 1][z] = 1; //рисует на 1 ниже 
+                        }
 
-                        if (cube[x][y - 1][z] == 0 && y > 0) {
-                            cout << endl << x << ' ' << y << ' ' << z << endl;
-                            fugure[x][y][z] = 0;
-                            fugure[x][y - 1][z] = 1;
-                        }
-                        else {
-                            cube[x][y][z] = 1;
-                        }
                     }
+        //  else if (y == 0) cube[x][y][z] = 1;
         down = 0;
     }
 
 
-
-
-    for (int x = N; x > 0; x--)
-        for (int y = Ny; y > 0; y--)
-            for (int z = N; z > 0; z--)
+    for (int x = 0; x < N; x++)
+        for (int y = 0; y < Ny; y++)
+            for (int z = 0; z < N; z++)
                 if (fugure[x][y][z] == 1)
-                    arena[x][y][z].draw(b, b, b, (-x + N / 2) * K, (y * K) - N / 2 * K, (-z + N / 2) * K);
-    ////cub1(b, b, b, (-x + N / 2 +kx) * K, (y + Ny / 2) * K, (-z + N / 2 + kz) * K);
-    ////Sleep(300);
+                    arena[x][y][z].draw(b, b, b, (-x + kx + N / 2) * K, (y * K) - N / 2 * K, (-z + kz + N / 2) * K);
 
 
-//}
-//default:
-//    break;
-//}
+
+    //}
+    //default:
+    //    break;
+    //}
 }
 
 
@@ -459,6 +459,7 @@ void NormalKeyHandler(unsigned char key, int x, int y)
         Kz -= 1;
     else if (key == 32) {
         down = 1;
+        Ky--;
     }
 
     else if (key == 27)
