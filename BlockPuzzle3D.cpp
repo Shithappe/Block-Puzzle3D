@@ -4,12 +4,13 @@
 #include<string>
 #include <ctime>
 #include <Windows.h>
+#include <fstream>
+
 using namespace std;
 
 
 const int N = 5, Ny = N + 3;
 bool fugure[N][Ny][N];
-//bool cub[N][Ny][N];
 bool cube[N][Ny][N];
 
 
@@ -27,9 +28,9 @@ double K = 2 * b;
 int countKx = Kx, countKz = Kz;
 
 
-bool down = 0;
+bool down = 0, gameOver = 0;
 int maxX, maxZ;
-
+int score, BestScore;
 
 class Cube
 {
@@ -127,8 +128,11 @@ void drawString(void* font, const char* text, float x, float y)
     }
 }
 
-void text(double x, double y, string line, int num = -1) {
-    //line = to_string(line);
+void text(bool f, double x, double y, string line, int num = -1) {
+    if (f)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glColor3f(1.0, 1.0, 1.0);
+    glLoadIdentity();
     if (num != -1) {
         string line1 = to_string(num);
         line += line1;
@@ -144,6 +148,15 @@ void setup() {
                 cube[x][y][z] = 0;
             }
         }
+    }
+    ifstream outf("BestScore.txt");
+
+    if (!outf)
+    {
+        BestScore = 0;
+    }
+    else {
+        outf >> BestScore;
     }
 
 }
@@ -329,69 +342,133 @@ int getMaxDepth() {
         if (cube[xIndex][i + 1][zIndex])
             yIndex = -i;
     }
-
+    cout << yIndex;
+    if (yIndex >= -2) gameOver = 1;
     return yIndex;
 }
 
 void figure() {
-    fugure[0][1][0] = 1;
-    fugure[1][1][0] = 1;
-    fugure[2][1][0] = 1;
-    fugure[3][1][0] = 1;
-    fugure[4][1][0] = 1;
-    
-
-    if (Ky == getMaxDepth()) {
-        int xIndex = -Kx;
-        int yIndex = -getMaxDepth();
-        int zIndex = -Kz; // y = -x + N /2 // x = N /2 - y
-        cube[xIndex][yIndex][zIndex] = 1;
-        cube[xIndex+1][yIndex][zIndex] = 1;
-        cube[xIndex + 2][yIndex][zIndex] = 1;
-        cube[xIndex + 3][yIndex][zIndex] = 1;
-        cube[xIndex + 4][yIndex][zIndex] = 1;
-
-        Ky = 0;
-        Kz = 0;
-        Kx = 0;
+    srand(0);
+    int F = rand() % 3 + 1;
+    if (F==1){
+        fugure[0][1][0] = 1;
+        fugure[1][1][0] = 1;
+        fugure[2][1][0] = 1;
     }
+    else if (F==2){
+        fugure[0][1][0] = 1;
+        fugure[0][1][1] = 1;
+        fugure[1][1][0] = 1;
+    }
+    else if (F==3) {
+        fugure[0][1][0] = 1;
+        fugure[0][1][1] = 1;
+        fugure[1][1][0] = 1;
+        fugure[1][1][1] = 1;
+    }
+
+
+
+    
+    while (down)
+    {
+        Ky--;
+        if (Ky == getMaxDepth()) {
+            int xIndex = -Kx;
+            int yIndex = -getMaxDepth();
+            int zIndex = -Kz; // y = -x + N /2 // x = N /2 - y
+
+            
+            if (F == 1) {
+                cube[xIndex][yIndex][zIndex] = 1;
+                cube[xIndex+1][yIndex][zIndex] = 1;
+                cube[xIndex+2][yIndex][zIndex] = 1;
+            }
+            else if (F == 2) {
+                cube[xIndex][yIndex][zIndex] = 1;
+                cube[xIndex][yIndex][zIndex+1] = 1;
+                cube[xIndex + 1][yIndex][zIndex] = 1;
+            }
+            else if (F == 3) {
+                cube[xIndex][yIndex][zIndex] = 1;
+                cube[xIndex][yIndex][zIndex+1] = 1;
+                cube[xIndex + 1][yIndex][zIndex] = 1;
+                cube[xIndex + 1][yIndex][zIndex+1] = 1;
+
+            }
+            Ky = 0;
+            Kz = 0;
+            Kx = 0;
+            down = 0;
+        }
+    }
+
 
     for (int x = 0; x < N; x++)
         for (int y = 0; y < Ny; y++)
             for (int z = 0; z < N; z++) {
                 if (fugure[x][y][z])
                     arena[x][y][z].draw(b, b, b, (-x + Kx + N / 2) * K, (-y + Ky + Ny / 2) * K, (-z + Kz + N / 2) * K);
+ 
             }
+   
 }
 
+int clear(int i) {
+    for (int x = 0; x < N; x++)
+        for (int z = 0; z < N; z++) {
+            if (!cube[x][6-i][z]) return -1;
+        }
+    for (int x = 0; x < N; x++)
+        for (int z = 0; z < N; z++) {
+            cube[x][6-i][z] = 0;
+        }
+    score++;
+    return i;
+}
 
-//void done() {
-//    int count = 0;
-//    for (int x = 0; x < N; x++)
-//        for (int z = 0; z < N; z++)
-//            if (count < N * N) count++;
-//    if (count == N * N)
-//        for (int x = 0; x < N; x++)
-//            for (int z = 0; z < N; z++)
-//                cube[x][-6][z] = 0;
-//
-//}
-//
-
+void allClear() {
+    for (int i = 0; i < Ny; i++)
+    {
+        int n = clear(i);
+       if(n>-1)
+           for (int x = n; x < N; x++)
+             for (int y = n; y < Ny; y++)
+                 for (int z = n; z < N; z++)
+                     if (cube[x][y][z]) {
+                         
+                         cube[x][y][z] = 0;
+                         cube[x][y + 1][z] = 1;
+                     }
+    }
+}
 
 void display() {
+
     cout << Kx << " " << Ky << ' ' << Kz;
     BigCub();
 
     figure();
-   // done();
-
+    allClear();
     for (int x = 0; x < N; x++)
         for (int y = 0; y < Ny; y++)
             for (int z = 0; z < N; z++)
                 if (cube[x][y][z] == 1)
                     arena[x][y][z].draw(b, b, b, (-x + N / 2) * K, (-y + Ny / 2) * K, (-z + N / 2) * K);
 
+    text(0, -0.9, -0.9, "score ", score);
+    text(0, 0.4, -0.9, "best score ", BestScore);
+    if (gameOver) {
+        text(1, 0, 0, "G A M E  O V E R");
+        ofstream outf("BestScore.txt");
+        if (!outf)
+        {
+            cerr << "Uh oh, SomeText.txt could not be opened for writing!" << endl;
+        }
+                outf << score;
+        //Sleep(500);
+        //exit(0);
+    }
 
     glFlush();
     glutSwapBuffers();
@@ -455,7 +532,7 @@ void NormalKeyHandler(unsigned char key, int x, int y)
     }
 
     else if (key == 27)
-        exit(0);
+       exit(0);
 
 
     cout << key << std::endl;
@@ -463,7 +540,6 @@ void NormalKeyHandler(unsigned char key, int x, int y)
 }
 
 int main(int argc, char* argv[]) {
-
     setup();
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -477,5 +553,4 @@ int main(int argc, char* argv[]) {
     glutMainLoop();
 
     return 0;
-
 }
