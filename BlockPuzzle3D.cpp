@@ -3,9 +3,13 @@
 #include <sstream>
 #include <Windows.h>
 #include <fstream>
+
 using namespace std;
 
+
 const int N = 5, Ny = N + 3;
+bool cube[N][Ny][N];
+
 
 double rotate_y;
 double rotate_x;
@@ -53,56 +57,48 @@ public:
 
     void draw(double x, double y, double z, double kx, double ky, double kz)
     {
-                    glLoadIdentity();
-                    // Rotate when user changes rotate_x and rotate_y
-                    glRotatef(rotate_x, 1.0, 0.0, 0.0);
-                    glRotatef(rotate_y, 0.0, 1.0, 0.0);
+        glLoadIdentity();
+        // Rotate when user changes rotate_x and rotate_y
+        glRotatef(rotate_x, 1.0, 0.0, 0.0);
+        glRotatef(rotate_y, 0.0, 1.0, 0.0);
 
-                    // Purple side - RIGHT
-                    glBegin(GL_LINE_STRIP);//(GL_POLYGON);
-                    // glColor3f(1.0, 0.0, 1.0);
-                    glVertex3f(x + kx, -y + ky, -z + kz);
-                    glVertex3f(x + kx, y + ky, -z + kz);
-                    glVertex3f(x + kx, y + ky, z + kz);
-                    glVertex3f(x + kx, -y + ky, z + kz);
-                    glEnd();
+        glBegin(GL_LINE_STRIP);//(GL_POLYGON);
+        glVertex3f(x + kx, -y + ky, -z + kz);
+        glVertex3f(x + kx, y + ky, -z + kz);
+        glVertex3f(x + kx, y + ky, z + kz);
+        glVertex3f(x + kx, -y + ky, z + kz);
+        glEnd();
 
-                    // Green side - LEFT
-                    glBegin(GL_LINE_STRIP);
-                    //glColor3f(0.0, 1.0, 0.0);
-                    glVertex3f(-x + kx, -y + ky, z + kz);
-                    glVertex3f(-x + kx, y + ky, z + kz);
-                    glVertex3f(-x + kx, y + ky, -z + kz);
-                    glVertex3f(-x + kx, -y + ky, -z + kz);
-                    glVertex3f(-x + kx, -y + ky, z + kz);
-                    glEnd();
+        glBegin(GL_LINE_STRIP);
+        glVertex3f(-x + kx, -y + ky, z + kz);
+        glVertex3f(-x + kx, y + ky, z + kz);
+        glVertex3f(-x + kx, y + ky, -z + kz);
+        glVertex3f(-x + kx, -y + ky, -z + kz);
+        glVertex3f(-x + kx, -y + ky, z + kz);
+        glEnd();
 
-                    // Blue side - TOP
-                    glBegin(GL_LINE_STRIP);
-                    // glColor3f(0.0, 0.0, 1.0);
-                    glVertex3f(x + kx, y + ky, z + kz);
-                    glVertex3f(x + kx, y + ky, -z + kz);
-                    glVertex3f(-x + kx, y + ky, -z + kz);
-                    glVertex3f(-x + kx, y + ky, z + kz);
-                    glVertex3f(x + kx, y + ky, z + kz);
-                    glEnd();
+        glBegin(GL_LINE_STRIP);
+        glVertex3f(x + kx, y + ky, z + kz);
+        glVertex3f(x + kx, y + ky, -z + kz);
+        glVertex3f(-x + kx, y + ky, -z + kz);
+        glVertex3f(-x + kx, y + ky, z + kz);
+        glVertex3f(x + kx, y + ky, z + kz);
+        glEnd();
 
-                    // Red side - BOTTOM
-                    glBegin(GL_LINE_STRIP);
-                    // glColor3f(1.0, 0.0, 0.0);
-                    glVertex3f(x + kx, -y + ky, -z + kz);
-                    glVertex3f(x + kx, -y + ky, z + kz);
-                    glVertex3f(-x + kx, -y + ky, z + kz);
-                    glVertex3f(-x + kx, -y + ky, -z + kz);
-                    glVertex3f(x + kx, -y + ky, -z + kz);
-                    glEnd();
-                
+        glBegin(GL_LINE_STRIP);
+        glVertex3f(x + kx, -y + ky, -z + kz);
+        glVertex3f(x + kx, -y + ky, z + kz);
+        glVertex3f(-x + kx, -y + ky, z + kz);
+        glVertex3f(-x + kx, -y + ky, -z + kz);
+        glVertex3f(x + kx, -y + ky, -z + kz);
+        glEnd();
+
     }
 };
-
+Cube arena[N][Ny][N];
 void drawString(void* font, const char* text, float x, float y)
 {
-    if (!text) // нульовий указівник
+    if (!text) 
     {
         return;
     }
@@ -134,12 +130,19 @@ void setup() {
 
     speedRotate = 5;
 
-    a = 0.5,      b = a / N;
+    a = 0.5, b = a / N;
 
     K = 2 * b;
 
     F = 1;
 
+    for (int x = 0; x < N; x++) {
+        for (int y = 0; y < N; y++) {
+            for (int z = 0; z < N; z++) {
+                cube[x][y][z] = 0;
+            }
+        }
+    }
     ifstream outf("BestScore.txt");
 
     if (!outf)
@@ -157,6 +160,7 @@ void BigCub() {
     glLoadIdentity();
 
 
+    // Rotate when user changes rotate_x and rotate_y
     glRotatef(rotate_x, 1.0, 0.0, 0.0);
     glRotatef(rotate_y, 0.0, 1.0, 0.0);
 
@@ -212,10 +216,9 @@ int getMaxDepth() {
     int yIndex = -6;
 
     for (int i = Ny - 1; i >= 0; i--) {
-        if (i < 6) {
-            if (cub.get(xIndex, i + 1, zIndex))//////////////////////////
-                yIndex = -i;
-        } 
+        if (i < 6) 
+        if (cub.get(xIndex, i + 1, zIndex))//////////////////////////
+            yIndex = -i;
     }
     if (yIndex >= -2) gameOver = 1;
     return yIndex;
@@ -224,14 +227,14 @@ int getMaxDepth() {
 void figure() {
     srand(0);
     if (F == 6) F = 1;
-    if (F==1){
+    if (F == 1) {
         Figure.Set(0, 1, 0, 1);
         Figure.Set(1, 1, 0, 1);
         Figure.Set(2, 1, 0, 1);
         maxX = 2;
         maxZ = 0;
     }
-    else if (F==2){
+    else if (F == 2) {
         Figure.Set(0, 1, 0, 1);
         Figure.Set(0, 1, 1, 1);
         Figure.Set(1, 1, 0, 1);
@@ -239,7 +242,7 @@ void figure() {
         maxX = 1;
         maxZ = 1;
     }
-    else if (F==3) {
+    else if (F == 3) {
         Figure.Set(0, 1, 0, 1);
         Figure.Set(0, 1, 1, 1);
         maxX = 0;
@@ -267,7 +270,7 @@ void figure() {
             int yIndex = -getMaxDepth();
             int zIndex = -Kz; // y = -x + N /2 // x = N /2 - y
 
-            
+
             if (F == 1) {
                 cub.Set(xIndex + 0, yIndex, zIndex + 0, 1);
                 cub.Set(xIndex + 1, yIndex, zIndex + 0, 1);
@@ -310,7 +313,7 @@ void figure() {
     for (int x = 0; x < N; x++)
         for (int y = 0; y < Ny; y++)
             for (int z = 0; z < N; z++)
-                if (Figure.get(x,y,z))
+                if (Figure.get(x, y, z))
                     Figure.draw(b, b, b, (-x + Kx + N / 2) * K, (-y + Ky + Ny / 2) * K, (-z + Kz + N / 2) * K);
 
     Figure.clearArr();
@@ -320,13 +323,15 @@ void figure() {
 int clear(int i) {
     for (int x = 0; x < N; x++)
         for (int z = 0; z < N; z++) {
+            if (!cube[x][6 - i][z]) return -1;
             if (!cub.get(x, 6 - i, z)) return -1;  //
         }
     for (int x = 0; x < N; x++)
         for (int z = 0; z < N; z++) {
+            cube[x][6 - i][z] = 0;
             cub.Set(x, 6 - i, z, 0);
         }
-    score+=25;
+    score += 25;
     return i;
 }
 
@@ -337,11 +342,16 @@ void allClear() {
         if (n > -1) {
             for (int x = n; x < N; x++)
                 for (int z = n; z < N; z++) {
+                    cube[x][n][z] = 0;
                     cub.Set(x, n, z, 0);
                 }
             for (int x = 0; x < N; x++)
                 for (int y = 0; y < Ny; y++)
                     for (int z = 0; z < N; z++) {
+                        if (cube[x][y - n - 1][z]) {
+                            cube[x][y - n - 1][z] = 0;
+                            cube[x][6 - n][z] = 1;
+                        }
                         if (cub.get(x, y - n - 1, z)) {
                             cub.Set(x, y - n - 1, z, 0);
                             cub.Set(x, 6 - n, z, 1);
@@ -430,7 +440,7 @@ void NormalKeyHandler(unsigned char key, int x, int y)
         Kx -= 1;
     else if (key == 's' && Kz < 0)
         Kz += 1;
-    else if (key == 'w' && Kz > -4 +maxZ)
+    else if (key == 'w' && Kz > -4 + maxZ)
         Kz -= 1;
     else if (key == 32 && Ky >= -6) {
         down = 1;
@@ -448,11 +458,29 @@ void NormalKeyHandler(unsigned char key, int x, int y)
         }
         exit(0);
     }
-      
+
 
     cout << key << std::endl;
     glutPostRedisplay();
 }
+
+void mouseButton(int button, int state, int x, int y) {
+    if (button == GLUT_LEFT_BUTTON) {
+        if (state == GLUT_UP) 
+        {
+            rotate_x = 195;
+            display();
+        }
+    }
+    else if (button == GLUT_RIGHT_BUTTON) {
+        if (state == GLUT_UP) 
+        {
+            rotate_x = 15;
+            display();
+        }
+    }
+}
+
 
 int main(int argc, char* argv[]) {
     setup();
@@ -460,11 +488,12 @@ int main(int argc, char* argv[]) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowPosition(200, 100);
     glutInitWindowSize(500, 500);
-    glutCreateWindow("---");
+    glutCreateWindow("BlockPuzzle3D");
     glEnable(GL_DEPTH_TEST);
     if (!gameOver) {
         glutSpecialFunc(specialKeys);
         glutKeyboardFunc(NormalKeyHandler);
+        glutMouseFunc(mouseButton);
     }
     glutDisplayFunc(display);
     glutMainLoop();
